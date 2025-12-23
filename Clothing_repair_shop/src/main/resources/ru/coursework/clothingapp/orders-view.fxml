@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.coursework.clothingapp.controller.OrdersController"
+            stylesheets="@styles.css" prefWidth="1200" prefHeight="700">
+    <top>
+        <VBox BorderPane.alignment="CENTER">
+            <VBox spacing="10" styleClass="top-panel">
+                <padding>
+                    <Insets bottom="10" left="10" right="10" top="10" />
+                </padding>
+                <Label text="Мастерская по ремонту одежды" styleClass="header-label" />
+            </VBox>
+        </VBox>
+    </top>
+    <center>
+        <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+            <!-- Вкладка Заказы -->
+            <Tab text="Заказы">
+                <BorderPane>
+                    <top>
+                        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+                            <Label text="Статус:" />
+                            <ComboBox fx:id="ComboBoxStatus" prefWidth="150" promptText="Все статусы" />
+                            <Label text="От:" />
+                            <DatePicker fx:id="DatePickerStart" prefWidth="140" promptText="Начальная дата" />
+                            <Label text="До:" />
+                            <DatePicker fx:id="DatePickerEnd" prefWidth="140" promptText="Конечная дата" />
+                            <Button fx:id="BtnReset" text="Сбросить" onAction="#BtnResetOnAction" />
+                            <TextField fx:id="TextFieldOrderSearch" promptText="Поиск (введите что-либо)" HBox.hgrow="ALWAYS" />
+                        </HBox>
+                    </top>
+                    <center>
+                        <TableView fx:id="TableViewOrders" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="TableColumnId" text="ID" prefWidth="50" />
+                                <TableColumn fx:id="TableColumnOrderNumber" text="Номер заказа" prefWidth="120" />
+                                <TableColumn fx:id="TableColumnClient" text="Клиент" prefWidth="150" />
+                                <TableColumn fx:id="TableColumnStatus" text="Статус" prefWidth="100" />
+                                <TableColumn fx:id="TableColumnMaster" text="Мастер" prefWidth="120" />
+                                <TableColumn fx:id="TableColumnAcceptDate" text="Дата приёма" prefWidth="120" />
+                                <TableColumn fx:id="TableColumnDueDate" text="Дата готовности" prefWidth="120" />
+                                <TableColumn fx:id="TableColumnTotalCost" text="Смета" prefWidth="100" />
+                            </columns>
+                        </TableView>
+                    </center>
+                    <bottom>
+                        <VBox spacing="5" style="-fx-border-color: #e0e0e0; -fx-border-width: 1 0 0 0;">
+                            <padding>
+                                <Insets bottom="10" left="10" right="10" top="10" />
+                            </padding>
+                            <HBox spacing="10">
+                                <Button fx:id="BtnCreate" text="Новый заказ" onAction="#BtnCreateOnAction" style="-fx-padding: 8 20 8 20" />
+                                <Button fx:id="BtnExecute" text="Исполнение" onAction="#BtnExecuteOnAction" style="-fx-padding: 8 20 8 20" />
+                                <Button fx:id="BtnIssue" text="Выдать заказ" onAction="#BtnIssueOnAction" style="-fx-padding: 8 20 8 20" />
+                                <Button fx:id="BtnDelete" text="Удалить" onAction="#BtnDeleteOnAction" style="-fx-padding: 8 20 8 20" />
+                                <Button text="📄 Отчёт PDF" onAction="#BtnReportOnAction" style="-fx-padding: 8 20 8 20" />
+                            </HBox>
+                            <Label fx:id="LabelRecordCount" style="-fx-font-size: 12px; -fx-text-fill: #666;" text="Показано: 0 из 0"/>
+                        </VBox>
+                    </bottom>
+                </BorderPane>
+            </Tab>
+
+            <!-- Вкладка Клиенты -->
+            <Tab text="Клиенты">
+                <fx:include source="clients-view.fxml"/>
+            </Tab>
+
+            <!-- Вкладка Мастера -->
+            <Tab text="Мастера">
+                <fx:include source="masters-view.fxml"/>
+            </Tab>
+
+            <!-- Вкладка Статусы -->
+            <Tab text="Статусы">
+                <fx:include source="statuses-view.fxml"/>
+            </Tab>
+        </TabPane>
+    </center>
+</BorderPane>
+

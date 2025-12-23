@@ -1,0 +1,156 @@
+CREATE TABLE defect_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    default_severity INTEGER NOT NULL CHECK (default_severity BETWEEN 1 AND 5)
+);
+
+CREATE TABLE repair_operations (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    default_base_price NUMERIC(10,2) NOT NULL,
+    default_complexity_factor NUMERIC(4,2) DEFAULT 1.0
+);
+
+CREATE TABLE order_statuses (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE clients (
+    id SERIAL PRIMARY KEY,
+    surname VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    patronymic VARCHAR(100),
+    phone VARCHAR(20)
+);
+
+CREATE TABLE masters (
+    id SERIAL PRIMARY KEY,
+    surname VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    patronymic VARCHAR(100),
+    specialization VARCHAR(100),
+    phone VARCHAR(20)
+);
+
+CREATE TABLE orders (
+    id SERIAL PRIMARY KEY,
+    order_number VARCHAR(100) NOT NULL UNIQUE,
+    client_id INTEGER NOT NULL REFERENCES clients(id),
+    accept_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    status_id INTEGER NOT NULL REFERENCES order_statuses(id),
+    master_id INTEGER REFERENCES masters(id),
+    CONSTRAINT chk_dates CHECK (due_date >= accept_date)
+);
+
+CREATE TABLE items (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    type VARCHAR(100) NOT NULL,
+    size VARCHAR(10)
+);
+
+CREATE TABLE defects (
+    id SERIAL PRIMARY KEY,
+    item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    type_id INTEGER NOT NULL REFERENCES defect_types(id),
+    severity INTEGER NOT NULL CHECK (severity BETWEEN 1 AND 5)
+);
+
+CREATE TABLE repairs (
+    id SERIAL PRIMARY KEY,
+    item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    master_id INTEGER NOT NULL REFERENCES masters(id),
+    operation_id INTEGER NOT NULL REFERENCES repair_operations(id),
+    material VARCHAR(100),
+    base_price NUMERIC(10,2) NOT NULL,
+    complexity_factor NUMERIC(4,2),
+    total_price NUMERIC(10,2) GENERATED ALWAYS AS (base_price * COALESCE(complexity_factor, 1.0)) STORED,
+    completed_at DATE,
+    photo_before TEXT,
+    photo_after TEXT
+);
+
+CREATE INDEX idx_orders_client_id ON orders(client_id);
+CREATE INDEX idx_orders_status_id ON orders(status_id);
+CREATE INDEX idx_orders_master_id ON orders(master_id);
+CREATE INDEX idx_orders_due_date ON orders(due_date);
+CREATE INDEX idx_items_order_id ON items(order_id);
+CREATE INDEX idx_defects_item_id ON defects(item_id);
+CREATE INDEX idx_defects_type_id ON defects(type_id);
+CREATE INDEX idx_repairs_item_id ON repairs(item_id);
+CREATE INDEX idx_repairs_master_id ON repairs(master_id);
+CREATE INDEX idx_repairs_operation_id ON repairs(operation_id);
+CREATE INDEX idx_repairs_completed_at ON repairs(completed_at);
+CREATE INDEX idx_clients_phone ON clients(phone);
+CREATE INDEX idx_clients_name_surname ON clients(surname, name);
+CREATE INDEX idx_masters_specialization ON masters(specialization);
+
+
+INSERT INTO defect_types (name, default_severity) VALUES
+('Дыра', 3), ('Порванная молния', 2), ('Отстёгнутая пуговица', 1),
+('Повреждённая подкладка', 3), ('Разошедшийся шов', 2),
+('Пятно (не химчистка)', 1), ('Изношенный воротник/манжеты', 4);
+
+INSERT INTO repair_operations (name, default_base_price, default_complexity_factor) VALUES
+('Зашить дыру', 300.00, 1.0), ('Заменить молнию', 600.00, 1.3),
+('Пришить пуговицу', 100.00, 0.5), ('Восстановить подкладку', 800.00, 1.8),
+('Перешить шов', 400.00, 1.1), ('Удалить/заменить этикетку', 150.00, 0.6),
+('Укрепить воротник', 500.00, 1.4), ('Полный рестайлинг элемента', 2000.00, 2.5);
+
+INSERT INTO order_statuses (name) VALUES ('Принят'), ('В работе'), ('Готов'), ('Выдан');
+
+INSERT INTO clients (surname, name, patronymic, phone) VALUES
+('Иванов', 'Алексей', 'Сергеевич', '+79001112233'),
+('Петрова', 'Мария', 'Дмитриевна', '+79002223344'),
+('Сидоров', 'Дмитрий', NULL, '+79003334455'),
+('Козлова', 'Елена', 'Андреевна', '+79004445566'),
+('Смирнов', 'Артём', 'Владимирович', '+79005556677'),
+('Новикова', 'Ольга', 'Игоревна', '+79006667788'),
+('Морозов', 'Павел', NULL, '+79007778899'),
+('Волкова', 'Анна', 'Сергеевна', '+79008889900'),
+('Лебедев', 'Игорь', 'Петрович', '+79009990011'),
+('Соколова', 'Татьяна', NULL, '+79000001122');
+
+INSERT INTO masters (surname, name, patronymic, specialization, phone) VALUES
+('Громов', 'Станислав', 'Алексеевич', 'Верхняя одежда', '+79101111111'),
+('Ларионова', 'Екатерина', 'Владимировна', 'Молнии и фурнитура', '+79102222222'),
+('Федоров', 'Роман', NULL, 'Вечерние платья', '+79103333333'),
+('Белова', 'Надежда', 'Николаевна', 'Костюмы и пиджаки', '+79104444444'),
+('Кошкин', 'Максим', 'Игоревич', 'Повседневная одежда', '+79105555555'),
+('Орлова', 'Светлана', NULL, 'Детская одежда', '+79106666666');
+
+INSERT INTO orders (order_number, client_id, accept_date, due_date, status_id, master_id) VALUES
+('ORD-2025-001', 1, '2025-11-10', '2025-11-17', 4, 1),
+('ORD-2025-002', 2, '2025-11-12', '2025-11-20', 3, 2),
+('ORD-2025-003', 3, '2025-11-18', '2025-11-25', 2, 4),
+('ORD-2025-004', 4, '2025-11-20', '2025-11-27', 2, 5),
+('ORD-2025-005', 5, '2025-11-22', '2025-11-28', 1, 3),
+('ORD-2025-006', 6, '2025-11-21', '2025-11-24', 2, 1),
+('ORD-2025-007', 7, '2025-11-15', '2025-11-22', 2, 2),
+('ORD-2025-008', 8, '2025-11-19', '2025-11-26', 2, 6);
+
+INSERT INTO items (order_id, type, size) VALUES
+(1, 'Пальто', '52'), (2, 'Пиджак', '50'), (2, 'Брюки', '48'),
+(3, 'Шуба', '46'), (4, 'Платье', '44'), (5, 'Рубашка', '39'),
+(6, 'Куртка', '54'), (7, 'Плащ', '50'), (8, 'Жилет', '48'),
+(3, 'Перчатки', NULL);
+
+INSERT INTO defects (item_id, type_id, severity) VALUES
+(1, 1, 3), (1, 4, 3), (2, 2, 2), (3, 5, 2), (4, 1, 4), (4, 7, 4),
+(5, 6, 1), (6, 3, 1), (7, 1, 2), (8, 5, 3), (9, 2, 1), (10, 3, 1);
+
+INSERT INTO repairs (item_id, master_id, operation_id, material, base_price, complexity_factor, completed_at, photo_before, photo_after) VALUES
+(1, 1, 1, 'Шерстяная нить', 300.00, 1.0, '2025-11-13', '/photos/ord1_item1_before.jpg', '/photos/ord1_item1_after.jpg'),
+(1, 1, 4, 'Подкладочная ткань (черная)', 800.00, 1.8, '2025-11-15', '/photos/ord1_item1_before2.jpg', '/photos/ord1_item1_after2.jpg'),
+(2, 2, 2, 'Молния YKK 60 см', 600.00, 1.3, '2025-11-16', '/photos/ord2_item2_before.jpg', '/photos/ord2_item2_after.jpg'),
+(3, 2, 5, 'Х/б нить', 400.00, 1.1, '2025-11-17', '/photos/ord2_item3_before.jpg', '/photos/ord2_item3_after.jpg'),
+(4, 1, 1, 'Меховая заплатка', 300.00, 1.5, NULL, '/photos/ord3_item4_before.jpg', NULL),
+(4, 1, 7, 'Мех + подкладка', 500.00, 1.6, NULL, '/photos/ord3_item4_before2.jpg', NULL),
+(5, 3, 1, 'Шёлковая нить', 300.00, 1.2, '2025-11-20', '/photos/ord4_item5_before.jpg', '/photos/ord4_item5_after.jpg'),
+(6, 5, 3, 'Перламутровая пуговица', 100.00, 0.5, '2025-11-22', '/photos/ord5_item6_before.jpg', '/photos/ord5_item6_after.jpg'),
+(7, 1, 1, 'Нейлоновая заплатка', 300.00, 0.9, NULL, '/photos/ord6_item7_before.jpg', NULL),
+(8, 2, 5, 'Капроновая нить', 400.00, 1.1, NULL, '/photos/ord7_item8_before.jpg', NULL),
+(9, 6, 2, 'Молния тонкая 30 см', 600.00, 1.0, NULL, '/photos/ord8_item9_before.jpg', NULL),
+(10, 6, 3, 'Металлическая пуговица', 100.00, 0.5, '2025-11-21', '/photos/ord3_item10_before.jpg', '/photos/ord3_item10_after.jpg');

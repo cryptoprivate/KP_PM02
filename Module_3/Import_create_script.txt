@@ -1,0 +1,177 @@
+-- Справочник статусов заказов
+CREATE TABLE order_statuses (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- Клиенты
+CREATE TABLE clients (
+    id SERIAL PRIMARY KEY,
+    surname VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    patronymic VARCHAR(100),
+    phone VARCHAR(20) NOT NULL
+);
+
+-- Мастера
+CREATE TABLE masters (
+    id SERIAL PRIMARY KEY,
+    surname VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    patronymic VARCHAR(100),
+    specialization VARCHAR(100),
+    phone VARCHAR(20)
+);
+
+-- Заказы
+CREATE TABLE orders (
+    id SERIAL PRIMARY KEY,
+    order_number VARCHAR(50) NOT NULL UNIQUE,
+    client_id INTEGER NOT NULL REFERENCES clients(id),
+    master_id INTEGER REFERENCES masters(id),
+    accept_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    status_id INTEGER NOT NULL REFERENCES order_statuses(id),
+    CONSTRAINT chk_dates CHECK (due_date >= accept_date)
+);
+
+-- Изделия
+CREATE TABLE items (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    type VARCHAR(100) NOT NULL,
+    size VARCHAR(10)
+);
+
+-- Дефекты изделий
+CREATE TABLE defects (
+    id SERIAL PRIMARY KEY,
+    item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    defect_type VARCHAR(100) NOT NULL,
+    description TEXT,
+    severity INTEGER NOT NULL CHECK (severity BETWEEN 1 AND 5)
+);
+
+-- Ремонтные работы
+CREATE TABLE repairs (
+    id SERIAL PRIMARY KEY,
+    item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    defect_id INTEGER NOT NULL REFERENCES defects(id),
+    operation_name VARCHAR(100) NOT NULL,
+    master_id INTEGER NOT NULL REFERENCES masters(id),
+    material VARCHAR(100),
+    price NUMERIC(10,2) NOT NULL,
+    completed_at DATE,
+    photo_before TEXT,
+    photo_after TEXT
+);
+
+-- Индексы
+CREATE INDEX idx_orders_client ON orders(client_id);
+CREATE INDEX idx_orders_status ON orders(status_id);
+CREATE INDEX idx_orders_master ON orders(master_id);
+CREATE INDEX idx_items_order ON items(order_id);
+CREATE INDEX idx_defects_item ON defects(item_id);
+CREATE INDEX idx_repairs_item ON repairs(item_id);
+CREATE INDEX idx_repairs_defect ON repairs(defect_id);
+CREATE INDEX idx_repairs_master ON repairs(master_id);
+CREATE INDEX idx_clients_phone ON clients(phone);
+
+-- Триггер: автоматический расчёт price
+CREATE OR REPLACE FUNCTION calc_repair_price()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_base_price NUMERIC(10,2);
+    v_severity INTEGER;
+BEGIN
+    SELECT severity INTO v_severity FROM defects WHERE id = NEW.defect_id;
+
+    -- Базовая цена по названию операции
+    CASE NEW.operation_name
+        WHEN 'Зашить дыру' THEN v_base_price := 250.00;
+        WHEN 'Восстановить подкладку' THEN v_base_price := 650.00;
+        WHEN 'Заменить молнию' THEN v_base_price := 650.00;
+        WHEN 'Перешить шов' THEN v_base_price := 350.00;
+        WHEN 'Пришить пуговицу' THEN v_base_price := 80.00;
+        WHEN 'Удалить пятно' THEN v_base_price := 180.00;
+        ELSE v_base_price := 100.00;
+    END CASE;
+
+    NEW.price := ROUND(v_base_price * (1 + 0.2 * (v_severity - 1)), 2);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_calc_repair_price
+BEFORE INSERT OR UPDATE OF defect_id, operation_name ON repairs
+FOR EACH ROW
+EXECUTE FUNCTION calc_repair_price();
+
+-- Триггер: нельзя выдать заказ с незавершёнными ремонтами
+CREATE OR REPLACE FUNCTION check_order_completion()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status_id IN (3, 4) THEN
+        IF EXISTS (
+            SELECT 1
+            FROM items i
+            JOIN repairs r ON r.item_id = i.id
+            WHERE i.order_id = NEW.id
+              AND r.completed_at IS NULL
+        ) THEN
+            RAISE EXCEPTION 'Заказ имеет незавершённые ремонты';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_check_order_completion
+BEFORE UPDATE OF status_id ON orders
+FOR EACH ROW
+EXECUTE FUNCTION check_order_completion();
+
+-- Данные
+
+INSERT INTO order_statuses (name) VALUES 
+('Принят'), ('В работе'), ('Готов'), ('Выдан');
+
+INSERT INTO clients (surname, name, patronymic, phone) VALUES
+('Иванов', 'Алексей', 'Сергеевич', '+79001112233'),
+('Петрова', 'Мария', 'Дмитриевна', '+79002223344'),
+('Сидоров', 'Дмитрий', NULL, '+79003334455'),
+('Козлова', 'Елена', 'Андреевна', '+79004445566');
+
+INSERT INTO masters (surname, name, patronymic, specialization, phone) VALUES
+('Громов', 'Станислав', 'Алексеевич', 'Верхняя одежда', '+79101111111'),
+('Ларионова', 'Екатерина', 'Владимировна', 'Молнии и фурнитура', '+79102222222'),
+('Федоров', 'Роман', NULL, 'Вечерние платья', '+79103333333');
+
+INSERT INTO orders (order_number, client_id, master_id, accept_date, due_date, status_id) VALUES
+('ORD-2025-001', 1, 1, '2025-11-10', '2025-11-17', 4),
+('ORD-2025-002', 2, 2, '2025-11-12', '2025-11-20', 2),
+('ORD-2025-003', 3, 1, '2025-11-18', '2025-11-25', 2),
+('ORD-2025-004', 4, 1, '2025-11-20', '2025-11-27', 1);
+
+INSERT INTO items (order_id, type, size) VALUES
+(1, 'Пальто', '52'),
+(2, 'Пиджак', '50'),
+(2, 'Брюки', '48'),
+(3, 'Шуба', '46'),
+(4, 'Платье', '44');
+
+INSERT INTO defects (item_id, defect_type, description, severity) VALUES
+(1, 'Дыра', 'Дыра на рукаве 3 см', 3),
+(1, 'Поврежденная подкладка', 'Порвана подкладка у плеча', 3),
+(2, 'Порванная молния', 'Молния не застегивается', 2),
+(3, 'Разошедшийся шов', 'Шов по бокам', 2),
+(4, 'Отстегнутая пуговица', 'Нет одной пуговицы', 1),
+(5, 'Пятно', 'Пятно на подоле', 1);
+
+INSERT INTO repairs (item_id, defect_id, operation_name, master_id, material, completed_at, photo_before, photo_after) VALUES
+(1, 1, 'Зашить дыру', 1, 'Шерстяная нить', '2025-11-13', '/photos/b1.jpg', '/photos/a1.jpg'),
+(1, 2, 'Восстановить подкладку', 1, 'Подкладочная ткань', '2025-11-15', '/photos/b2.jpg', '/photos/a2.jpg'),
+(2, 3, 'Заменить молнию', 2, 'Молния YKK 60 см', '2025-11-16', '/photos/b3.jpg', '/photos/a3.jpg'),
+(3, 4, 'Перешить шов', 1, 'Хлопковая нить', NULL, '/photos/b4.jpg', NULL),
+(4, 5, 'Пришить пуговицу', 1, 'Перламутровая пуговица', '2025-11-22', '/photos/b5.jpg', '/photos/a5.jpg'),
+(5, 6, 'Удалить пятно', 3, 'Пятновыводитель', NULL, '/photos/b6.jpg', NULL);

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Region?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.coursework.clothingapp.controller.ExecutionController"
+            stylesheets="@styles.css" prefWidth="1100" prefHeight="700">
+
+    <top>
+        <VBox spacing="15" style="-fx-padding: 20; -fx-background-color: #f8f9fa; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 2 0;">
+            <Label fx:id="LabelOrderInfo" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Label text="Назначить мастера:" style="-fx-font-size: 13px; -fx-font-weight: bold;" />
+                <ComboBox fx:id="ComboBoxMaster" prefWidth="300" promptText="Выберите мастера"
+                          style="-fx-font-size: 13px;" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="0">
+            <TableView fx:id="TableViewRepairs" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="TableColumnItem" text="Изделие" prefWidth="130" />
+                    <TableColumn fx:id="TableColumnDefect" text="Дефект" prefWidth="140" />
+                    <TableColumn fx:id="TableColumnOperation" text="Операция" prefWidth="140" />
+                    <TableColumn fx:id="TableColumnPrice" text="Цена" prefWidth="90" />
+                    <TableColumn fx:id="TableColumnPhotoBefore" text="📷 ДО" prefWidth="70" />
+                    <TableColumn fx:id="TableColumnPhotoAfter" text="📷 ПОСЛЕ" prefWidth="80" />
+                    <TableColumn fx:id="TableColumnStatus" text="Статус" prefWidth="120" />
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+
+    <bottom>
+        <VBox spacing="0" style="-fx-background-color: #f8f9fa; -fx-border-color: #e0e0e0; -fx-border-width: 2 0 0 0;">
+            <padding>
+                <Insets bottom="15" left="20" right="20" top="15" />
+            </padding>
+
+            <!-- Первая строка кнопок: Операции -->
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <Label text="Операции:" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-min-width: 100;" />
+                <Button fx:id="BtnAddRepair" text="➕ Добавить операцию" onAction="#BtnAddRepairOnAction"
+                        style="-fx-padding: 12 25; -fx-font-size: 13px; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" />
+                <Button fx:id="BtnMarkCompleted" text="✓ Отметить выполненной" onAction="#BtnMarkCompletedOnAction"
+                        style="-fx-padding: 12 25; -fx-font-size: 13px; -fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-weight: bold;" />
+            </HBox>
+
+            <!-- Вторая строка кнопок: Фото -->
+            <HBox spacing="12" alignment="CENTER_LEFT" style="-fx-padding: 10 0 0 0;">
+                <Label text="Фотографии:" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-min-width: 100;" />
+                <Button fx:id="BtnUploadPhotoBefore" text="📷 Загрузить фото ДО" onAction="#BtnUploadPhotoBeforeOnAction"
+                        style="-fx-padding: 12 25; -fx-font-size: 13px; -fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;" />
+                <Button fx:id="BtnUploadPhotoAfter" text="📷 Загрузить фото ПОСЛЕ" onAction="#BtnUploadPhotoAfterOnAction"
+                        style="-fx-padding: 12 25; -fx-font-size: 13px; -fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;" />
+            </HBox>
+
+            <!-- Третья строка кнопок: Завершение -->
+            <HBox spacing="12" alignment="CENTER_LEFT" style="-fx-padding: 10 0 0 0;">
+                <Label text="Завершение:" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-min-width: 100;" />
+                <Button fx:id="BtnComplete" text="✓ Завершить заказ" onAction="#BtnCompleteOnAction"
+                        style="-fx-padding: 12 30; -fx-font-size: 14px; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label text="ИТОГО К ОПЛАТЕ:" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+                <Label fx:id="LabelTotalCost" text="0.00 ₽" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #4CAF50; -fx-min-width: 120; -fx-alignment: center-right;" />
+            </HBox>
+        </VBox>
+    </bottom>
+
+</BorderPane>
+

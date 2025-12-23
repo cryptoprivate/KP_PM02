@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.coursework.clothingapp.controller.OrderEditController"
+            stylesheets="@styles.css" prefWidth="1000" prefHeight="750">
+    <top>
+        <VBox spacing="15" style="-fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0; -fx-background-color: #f8f9fa;">
+            <padding>
+                <Insets bottom="15" left="20" right="20" top="15" />
+            </padding>
+            <Label text="Приём заказа" style="-fx-font-size: 18; -fx-font-weight: bold;" />
+
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <Label text="Номер заказа:" style="-fx-font-weight: bold;" />
+                    <TextField fx:id="TextFieldOrderNumber" prefWidth="200" editable="false"
+                               style="-fx-font-size: 13; -fx-padding: 8;" />
+                </VBox>
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <Label text="Клиент:*" style="-fx-font-weight: bold;" />
+                    <ComboBox fx:id="ComboBoxClient" prefWidth="300" maxWidth="Infinity"
+                              style="-fx-font-size: 13;" promptText="Выберите клиента" />
+                </VBox>
+            </HBox>
+
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <Label text="Дата приёма:*" style="-fx-font-weight: bold;" />
+                    <DatePicker fx:id="DatePickerAccept" prefWidth="200"
+                                style="-fx-font-size: 13;" promptText="Выберите дату" />
+                </VBox>
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <Label text="Дата готовности:" style="-fx-font-weight: bold;" />
+                    <DatePicker fx:id="DatePickerDue" prefWidth="200"
+                                style="-fx-font-size: 13;" promptText="Выберите дату" />
+                </VBox>
+            </HBox>
+
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <Label text="Мастер:" style="-fx-font-weight: bold;" />
+                    <ComboBox fx:id="ComboBoxMaster" prefWidth="300" maxWidth="Infinity"
+                              style="-fx-font-size: 13;" promptText="Выберите мастера (опционально)" />
+                </VBox>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="15" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="15" left="20" right="20" top="15" />
+            </padding>
+
+            <!-- Изделия -->
+            <VBox spacing="8">
+                <Label text="Изделия в заказе:*" style="-fx-font-size: 14; -fx-font-weight: bold;" />
+                <HBox spacing="10">
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <TableView fx:id="TableViewItems" VBox.vgrow="ALWAYS" prefHeight="220">
+                            <columns>
+                                <TableColumn fx:id="TableColumnType" text="Тип изделия" prefWidth="400" />
+                                <TableColumn fx:id="TableColumnSize" text="Размер" prefWidth="180" />
+                            </columns>
+                        </TableView>
+                    </VBox>
+                    <VBox spacing="10" alignment="TOP_CENTER">
+                        <Button fx:id="BtnAddItem" text="➕ Добавить изделие" onAction="#BtnAddItemOnAction"
+                                minWidth="150" style="-fx-padding: 12 18 12 18; -fx-font-size: 12; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" />
+                        <Button fx:id="BtnRemoveItem" text="🗑 Удалить" onAction="#BtnRemoveItemOnAction"
+                                minWidth="150" style="-fx-padding: 12 18 12 18; -fx-font-size: 12; -fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold;" />
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Дефекты -->
+            <VBox spacing="8">
+                <Label text="Дефекты изделия:" style="-fx-font-size: 14; -fx-font-weight: bold;" />
+                <Label text="💡 Выберите изделие выше, чтобы добавить дефекты"
+                       style="-fx-font-size: 11; -fx-text-fill: #6c757d;" />
+                <HBox spacing="10">
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <TableView fx:id="TableViewDefects" VBox.vgrow="ALWAYS" prefHeight="220">
+                            <columns>
+                                <TableColumn fx:id="TableColumnDefectType" text="Тип дефекта" prefWidth="220" />
+                                <TableColumn fx:id="TableColumnDescription" text="Описание" prefWidth="280" />
+                                <TableColumn fx:id="TableColumnSeverity" text="Серьёзность" prefWidth="100" />
+                            </columns>
+                        </TableView>
+                    </VBox>
+                    <VBox spacing="10" alignment="TOP_CENTER">
+                        <Button fx:id="BtnAddDefect" text="➕ Добавить дефект" onAction="#BtnAddDefectOnAction"
+                                minWidth="150" style="-fx-padding: 12 18 12 18; -fx-font-size: 12; -fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-weight: bold;" />
+                        <Button fx:id="BtnRemoveDefect" text="🗑 Удалить" onAction="#BtnRemoveDefectOnAction"
+                                minWidth="150" style="-fx-padding: 12 18 12 18; -fx-font-size: 12; -fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold;" />
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <Label fx:id="LabelTotalCost" text="Предварительная смета: 0.00 ₽"
+                   style="-fx-font-size: 17; -fx-font-weight: bold; -fx-text-fill: #0066cc; -fx-padding: 10 0 0 0;" />
+            <Label text="💰 Окончательная стоимость будет рассчитана при исполнении заказа"
+                   style="-fx-font-size: 11; -fx-text-fill: #6c757d; -fx-padding: 2 0 0 0;" />
+        </VBox>
+    </center>
+    <bottom>
+        <HBox spacing="15" style="-fx-border-color: #e0e0e0; -fx-border-width: 1 0 0 0; -fx-background-color: #f8f9fa;"
+              BorderPane.alignment="CENTER_RIGHT" alignment="CENTER_RIGHT">
+            <padding>
+                <Insets bottom="15" left="20" right="20" top="15" />
+            </padding>
+            <Button fx:id="BtnSave" text="Сохранить заказ" onAction="#BtnSaveOnAction"
+                    style="-fx-padding: 12 40 12 40; -fx-font-size: 13; -fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold;" />
+            <Button fx:id="BtnCancel" text="Отмена" onAction="#BtnCancelOnAction"
+                    style="-fx-padding: 12 40 12 40; -fx-font-size: 13;" />
+        </HBox>
+    </bottom>
+</BorderPane>
+

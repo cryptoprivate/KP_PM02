@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ru.coursework.clothingapp.controller.ClientsController">
+    <padding>
+        <Insets bottom="20" left="20" right="20" top="20"/>
+    </padding>
+
+    <Label style="-fx-font-size: 20px; -fx-font-weight: bold;" text="Управление клиентами"/>
+
+    <HBox spacing="10">
+        <Button onAction="#onAddClick" text="Добавить клиента"/>
+        <Button onAction="#onEditClick" text="Редактировать"/>
+        <Button onAction="#onDeleteClick" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="Удалить"/>
+        <TextField fx:id="TextFieldClientSearch" promptText="Поиск (введите что-либо)" prefWidth="400" />
+    </HBox>
+
+    <TableView fx:id="clientsTable" VBox.vgrow="ALWAYS">
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+        </columnResizePolicy>
+        <columns>
+            <TableColumn fx:id="idColumn" minWidth="50" maxWidth="80" text="ID" resizable="false"/>
+            <TableColumn fx:id="surnameColumn" text="Фамилия"/>
+            <TableColumn fx:id="nameColumn" text="Имя"/>
+            <TableColumn fx:id="patronymicColumn" text="Отчество"/>
+            <TableColumn fx:id="phoneColumn" text="Телефон"/>
+        </columns>
+    </TableView>
+
+    <Label fx:id="LabelRecordCount" style="-fx-font-size: 12px; -fx-text-fill: #666;" text="Показано: 0 из 0"/>
+</VBox>
